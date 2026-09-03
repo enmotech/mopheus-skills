@@ -1,19 +1,19 @@
-# Skills For Real Human-Agent Engineering
+# Mopheus Agent Skills
 
-Official collection of production-grade AI agent skills, plugins, and slash command extensions for [Mopheus](https://mopheus.ai), Claude Code, OpenAI Codex, and modern AI development environments.
+Official AI agent skills and slash command extensions for human-agent engineering collaboration across [Mopheus](https://mopheus.ai), Claude Code, OpenAI Codex, and modern coding environments.
 
-Developing autonomous agent workflows is hard. Most AI prompts are toy demos that fail when real engineering begins: they guess wrong workspaces, drop long Markdown specs due to shell escaping, or silently break when CLI versions drift.
+Integrating AI coding agents into production workflows requires more than prompt templates. In real-world engineering, agents must reliably resolve workspace boundaries, preserve multi-line Markdown specifications without shell quote corruption, and gracefully handle environment and CLI version drift.
 
-These skills are engineered from real-world production experience. They enforce strict safety invariants, provide natural language intent routing, handle complex multi-line specifications natively, and keep external AI coding tools in lockstep with Mopheus.
+This repository provides production-hardened skills that connect autonomous agents directly with the Mopheus platform.
 
 ---
 
-## Installation (30-second setup)
+## Quick Setup
 
-### 1. Get the skills
+### 1. Install the skills
 
 <details>
-<summary><strong>Claude Code</strong></summary>
+<summary><strong>Claude Code (Recommended Plugin)</strong></summary>
 
 Inside your Claude Code session:
 
@@ -36,13 +36,13 @@ Once installed, `/mop` and all namespaced slash commands (`/mop:ticket`, `/mop:a
 <details>
 <summary><strong>OpenAI Codex, Cursor & Other Agents</strong></summary>
 
-The recommended way is using the universal [skills.sh](https://skills.sh) installer:
+Install via the universal [skills.sh](https://skills.sh) manager:
 
 ```bash
 npx skills add enmotech/mopheus-skills
 ```
 
-This will let you interactively select the skills (e.g. `mop`, `using-codegraph`) and target agents (Codex, Cursor, Windsurf, etc.), cleanly placing each skill into its designated folder (e.g. `~/.codex/skills/mop`).
+This interactively configures the desired skills (`mop`, `using-codegraph`) and target agents (Codex, Cursor, Windsurf, etc.), placing each skill into its designated agent directory.
 
 To install globally without prompts:
 
@@ -50,19 +50,18 @@ To install globally without prompts:
 npx skills add enmotech/mopheus-skills -g -a codex --all
 ```
 
-Or copy the skill directory manually:
+Or manually copy the skill directory:
 
 ```bash
-# Copy directly into your global or project skills directory
 cp -r skills/mop ~/.codex/skills/mop
 ```
 
 </details>
 
 <details>
-<summary><strong>Axon Skill Hub (Vendor Mirror)</strong></summary>
+<summary><strong>Axon Hub (Vendor Mirror)</strong></summary>
 
-If you manage your AI skills across machines via [Axon](https://github.com/kamusis/axon-cli), add this repository as a vendor source in `~/.axon/axon.yaml`:
+If you manage your AI editor environment with [Axon](https://github.com/kamusis/axon-cli), add this repository as an external vendor in `~/.axon/axon.yaml`:
 
 ```yaml
 vendors:
@@ -81,43 +80,33 @@ axon vendor sync
 
 </details>
 
-### 2. Run `/mop`
+### 2. Launch with `/mop`
 
-In your agent chat box, simply type:
+Type `/mop` in your chat session to start the interactive workspace assistant:
 
 ```text
 /mop
 ```
 
-It will instantly present an interactive quick-action guide. You can also directly ask in plain English or Chinese (e.g. `/mop check urgent tickets` or `/mop 查一下未完结工单`), and the agent will translate your request into verified CLI actions.
-
-### 3. Bam — you're ready to collaborate.
+The assistant verifies your active workspace, inspects your local environment, and presents quick actions for tickets, agents, and automation jobs. You can also give natural-language commands in English or Chinese (e.g., `/mop show open tickets assigned to me` or `/mop 查一下未完结工单`), and the skill translates them into verified CLI executions.
 
 ---
 
-## Why These Skills Exist
+## Engineering Design & Invariants
 
-We built these skills to systematically eliminate the most common failure modes when using coding agents in production:
+These skills are designed around strict operational invariants to prevent common agent failure modes:
 
-### #1: The Agent Guesses the Wrong Workspace or Project
-**The Problem**: Agents love to assume. When asked to create or update a ticket, an agent might pick a random workspace or hallucinate defaults, polluting other environments or failing silently.
+### 1. Workspace Boundary Protection (Zero Guesswork)
+Agents should never guess where they are working. The `mop` skill enforces a mandatory workspace validation gate. If the target workspace cannot be unambiguously resolved from the local repository or active session, the agent halts immediately and asks for confirmation rather than writing to a guessed workspace.
 
-**The Fix**: `mop` enforces a strict **Zero-Guesswork Workspace Gate**. If the target workspace cannot be unambiguously confirmed, the agent halts immediately and presents candidates instead of guessing.
+### 2. Specification Preservation (File & Stdin First)
+Passing complex PRDs, stack traces, or review comments through shell flags (`--description "..."`) frequently breaks newlines, backticks, and quotation marks. `mop` standardizes on `--*-file` and stdin pipelines, streaming Markdown payloads with 100% byte fidelity.
 
-### #2: Shell Escaping Corrupts Large Markdown Specs
-**The Problem**: Passing large PRD descriptions, stack traces, or review comments via CLI flags (`--description "..."`) leads to quote escaping nightmares, broken backticks, and stripped newlines.
+### 3. Intent Routing & Command Ergonomics
+Developers should not have to memorize exhaustive CLI syntax. In conversational agents, natural-language intents are dynamically mapped to structured CLI calls. In Claude Code, granular command aliases (`/mop:ticket`, `/mop:agent`, `/mop:workspace`, etc.) provide instant autocomplete and parameter guidance.
 
-**The Fix**: `mop` standardizes on **Native File & Stdin First** (`--description-file`, `--content-file`, `--instructions-file`). Specs and comments are passed cleanly via temporary files or streams with 100% byte fidelity.
-
-### #3: Memorizing CLI Subcommands is Painful
-**The Problem**: Developers use AI to save time, not to memorize dozens of CLI flags like `mop ticket list --priority urgent --output json`.
-
-**The Fix**: `mop` provides **Intent Routing & Slash Aliases**. In Codex and universal tools, `/mop <natural language>` maps plain language directly to CLI calls. In Claude Code, pre-packaged aliases (`/mop:ticket`, `/mop:agent`, `/mop:workspace`, `/mop:job`, `/mop:task`, `/mop:search`) offer instant dropdown completion.
-
-### #4: Version Drift Between Local CLI and Remote Server
-**The Problem**: Different machines have different CLI versions installed. An agent might attempt a newer command flag, fail with a syntax error, and enter an infinite retry loop.
-
-**The Fix**: A bundled, zero-dependency **Capability Matrix Detector** (`check_version.py`). When a capability is unsupported or requires a local daemon, the agent proactively alerts you, suggests the exact fallback, and provides the upgrade command.
+### 4. Version Matrix & Runtime Awareness
+Tool capabilities evolve across releases. The bundled, zero-dependency `check_version.py` validator probes the local CLI version against a verified capability matrix. If an operation requires a newer CLI release or a background daemon, the agent alerts you upfront and provides fallback instructions.
 
 ---
 
@@ -133,7 +122,7 @@ We built these skills to systematically eliminate the most common failure modes 
 ## Requirements
 
 - **Mopheus CLI (`mop` or `mopheus`)**: Version `v2.1.0` or higher (tested up to `v2.2.4+`).
-- **Python 3.8+**: Standard library only (no `pip install` required), used by helper utilities.
+- **Python 3.8+**: Standard library only (no pip dependencies required), used by helper diagnostic scripts.
 
 ## Releases
 
