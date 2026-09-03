@@ -34,15 +34,28 @@ Once installed, `/mop` and all namespaced slash commands (`/mop:ticket`, `/mop:a
 </details>
 
 <details>
-<summary><strong>OpenAI Codex & General Agents</strong></summary>
+<summary><strong>OpenAI Codex, Cursor & Other Agents</strong></summary>
 
-Clone into your Codex skills directory:
+The recommended way is using the universal [skills.sh](https://skills.sh) installer:
 
 ```bash
-git clone https://github.com/enmotech/mopheus-skills.git ~/.codex/skills/mopheus-skills
+npx skills add enmotech/mopheus-skills
 ```
 
-Or copy `skills/mop` directly into your workspace's `.codex/skills/` folder.
+This will let you interactively select the skills (e.g. `mop`, `using-codegraph`) and target agents (Codex, Cursor, Windsurf, etc.), cleanly placing each skill into its designated folder (e.g. `~/.codex/skills/mop`).
+
+To install globally without prompts:
+
+```bash
+npx skills add enmotech/mopheus-skills -g -a codex --all
+```
+
+Or copy the skill directory manually:
+
+```bash
+# Copy directly into your global or project skills directory
+cp -r skills/mop ~/.codex/skills/mop
+```
 
 </details>
 
