@@ -1,64 +1,40 @@
-# mopheus-skills
+# Skills For Real Human-Agent Engineering
 
-Official collection of AI agent skills, plugins, and slash command extensions for [Mopheus](https://mopheus.ai), Claude Code, OpenAI Codex, and modern AI development environments.
+Official collection of production-grade AI agent skills, plugins, and slash command extensions for [Mopheus](https://mopheus.ai), Claude Code, OpenAI Codex, and modern AI development environments.
 
-This repository is automatically synchronized from the `skills/` directory of [enmotech/mopheus](https://github.com/enmotech/mopheus) on every release.
+Developing autonomous agent workflows is hard. Most AI prompts are toy demos that fail when real engineering begins: they guess wrong workspaces, drop long Markdown specs due to shell escaping, or silently break when CLI versions drift.
 
----
-
-## Available Skills
-
-### 1. `mop` (Mopheus CLI & Agent Collaboration)
-
-The canonical skill for managing Mopheus workspaces, tickets, agents, teams, and automation triggers.
-
-- **Universal Slash Command (`/mop`)**:
-  - **Interactive Wizard**: Run `/mop` without arguments for an instant, categorized quick-action menu.
-  - **Natural Language Intent**: Run `/mop find urgent tickets` or `/mop 查一下未完结工单` to automatically translate plain language into structured CLI queries.
-  - **Direct CLI Execution**: Run full commands such as `mop ticket list --status open`.
-- **Claude Code Pre-built Command Aliases**:
-  - `/mop:ticket` — Manage, search, assign, comment, and rerun tickets.
-  - `/mop:agent` — Inspect agent system instructions, configure models, and manage skill assignments.
-  - `/mop:search` — Global full-text search across tickets, agents, skills, and projects.
-  - `/mop:workspace` — View, inspect, and switch active workspace.
-  - `/mop:job` — Manage automated jobs, execution history, and event triggers.
-  - `/mop:task` — Reconstruct agent thinking steps, transcripts, and debug tool executions.
-- **Safety & Performance**:
-  - Zero-guesswork workspace validation gate.
-  - Native `--*-file` flags for clean multi-line Markdown descriptions and comments.
-  - Cross-platform capability matrix detector (`check_version.py`) with automatic fallback alerts and `mop upgrade` guidance.
-
-### 2. `using-codegraph`
-
-Semantic codebase exploration and architecture analysis using the Mopheus CodeGraph engine.
+These skills are engineered from real-world production experience. They enforce strict safety invariants, provide natural language intent routing, handle complex multi-line specifications natively, and keep external AI coding tools in lockstep with Mopheus.
 
 ---
 
-## Installation
+## Installation (30-second setup)
 
-### Option 1: Axon Skill Manager (Recommended)
+### 1. Get the skills
 
-If you use [Axon](https://github.com/enmotech/axon):
+<details>
+<summary><strong>Claude Code</strong></summary>
 
-```bash
-axon install enmotech/mopheus-skills
+Inside your Claude Code session:
+
+```text
+/plugin marketplace add enmotech/mopheus-skills
+/plugin install mop
 ```
 
-### Option 2: Claude Code
-
-Clone into your Claude Code skills directory:
+Or from your terminal:
 
 ```bash
-git clone https://github.com/enmotech/mopheus-skills.git ~/.claude/skills/mopheus-skills
+claude plugin marketplace add enmotech/mopheus-skills
+claude plugin install mop
 ```
 
-To enable the granular slash commands (`/mop:ticket`, `/mop:agent`, etc.) in Claude Code:
+Once installed, `/mop` and all namespaced slash commands (`/mop:ticket`, `/mop:agent`, `/mop:search`, `/mop:workspace`, `/mop:job`, `/mop:task`) are automatically registered and managed.
 
-```bash
-python ~/.claude/skills/mopheus-skills/skills/mop/scripts/install_claude_commands.py
-```
+</details>
 
-### Option 3: OpenAI Codex & General Agents
+<details>
+<summary><strong>OpenAI Codex & General Agents</strong></summary>
 
 Clone into your Codex skills directory:
 
@@ -66,11 +42,89 @@ Clone into your Codex skills directory:
 git clone https://github.com/enmotech/mopheus-skills.git ~/.codex/skills/mopheus-skills
 ```
 
+Or copy `skills/mop` directly into your workspace's `.codex/skills/` folder.
+
+</details>
+
+<details>
+<summary><strong>Axon Skill Hub (Vendor Mirror)</strong></summary>
+
+If you manage your AI skills across machines via [Axon](https://github.com/kamusis/axon-cli), add this repository as a vendor source in `~/.axon/axon.yaml`:
+
+```yaml
+vendors:
+  - name: mopheus-skills
+    repo: https://github.com/enmotech/mopheus-skills.git
+    subdir: skills
+    dest: skills
+    ref: main
+```
+
+Then sync to your hub:
+
+```bash
+axon vendor sync
+```
+
+</details>
+
+### 2. Run `/mop`
+
+In your agent chat box, simply type:
+
+```text
+/mop
+```
+
+It will instantly present an interactive quick-action guide. You can also directly ask in plain English or Chinese (e.g. `/mop check urgent tickets` or `/mop 查一下未完结工单`), and the agent will translate your request into verified CLI actions.
+
+### 3. Bam — you're ready to collaborate.
+
 ---
+
+## Why These Skills Exist
+
+We built these skills to systematically eliminate the most common failure modes when using coding agents in production:
+
+### #1: The Agent Guesses the Wrong Workspace or Project
+**The Problem**: Agents love to assume. When asked to create or update a ticket, an agent might pick a random workspace or hallucinate defaults, polluting other environments or failing silently.
+
+**The Fix**: `mop` enforces a strict **Zero-Guesswork Workspace Gate**. If the target workspace cannot be unambiguously confirmed, the agent halts immediately and presents candidates instead of guessing.
+
+### #2: Shell Escaping Corrupts Large Markdown Specs
+**The Problem**: Passing large PRD descriptions, stack traces, or review comments via CLI flags (`--description "..."`) leads to quote escaping nightmares, broken backticks, and stripped newlines.
+
+**The Fix**: `mop` standardizes on **Native File & Stdin First** (`--description-file`, `--content-file`, `--instructions-file`). Specs and comments are passed cleanly via temporary files or streams with 100% byte fidelity.
+
+### #3: Memorizing CLI Subcommands is Painful
+**The Problem**: Developers use AI to save time, not to memorize dozens of CLI flags like `mop ticket list --priority urgent --output json`.
+
+**The Fix**: `mop` provides **Intent Routing & Slash Aliases**. In Codex and universal tools, `/mop <natural language>` maps plain language directly to CLI calls. In Claude Code, pre-packaged aliases (`/mop:ticket`, `/mop:agent`, `/mop:workspace`, `/mop:job`, `/mop:task`, `/mop:search`) offer instant dropdown completion.
+
+### #4: Version Drift Between Local CLI and Remote Server
+**The Problem**: Different machines have different CLI versions installed. An agent might attempt a newer command flag, fail with a syntax error, and enter an infinite retry loop.
+
+**The Fix**: A bundled, zero-dependency **Capability Matrix Detector** (`check_version.py`). When a capability is unsupported or requires a local daemon, the agent proactively alerts you, suggests the exact fallback, and provides the upgrade command.
+
+---
+
+## Available Skills
+
+| Skill | Slash Command | Description |
+| :--- | :--- | :--- |
+| **`mop`** | `/mop` *(plus 6 aliases)* | Canonical Mopheus workspace, ticket, agent, team, job, and transcript integration. |
+| **`using-codegraph`** | `/using-codegraph` | Semantic codebase architecture analysis and code graph retrieval. |
+
+---
+
+## Requirements
+
+- **Mopheus CLI (`mop` or `mopheus`)**: Version `v2.1.0` or higher (tested up to `v2.2.4+`).
+- **Python 3.8+**: Standard library only (no `pip install` required), used by helper utilities.
 
 ## Releases
 
-Skills in this repository are versioned and synchronized with `enmotech/mopheus` releases.
+Skills in this repository are versioned and automatically synchronized on every Mopheus release.
 
 ## License
 

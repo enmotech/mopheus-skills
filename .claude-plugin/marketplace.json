@@ -1,0 +1,24 @@
+{
+  "name": "enmotech",
+  "owner": {
+    "name": "Enmotech",
+    "url": "https://mopheus.ai"
+  },
+  "description": "Official Mopheus skills and plugins for AI development environments.",
+  "plugins": [
+    {
+      "name": "mop",
+      "source": "./",
+      "description": "Official Mopheus CLI integration for workspace, ticket, agent, team, and automation management.",
+      "category": "engineering",
+      "keywords": [
+        "mopheus",
+        "mop",
+        "agent",
+        "tickets",
+        "engineering",
+        "skills"
+      ]
+    }
+  ]
+}

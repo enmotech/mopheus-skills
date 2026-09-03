@@ -1,0 +1,25 @@
+{
+  "name": "mop",
+  "version": "2.2.4",
+  "description": "Mopheus AI agent skills for tickets, agents, workspaces, search, jobs, and autonomous task collaboration.",
+  "author": {
+    "name": "Enmotech",
+    "url": "https://mopheus.ai"
+  },
+  "homepage": "https://mopheus.ai",
+  "repository": "https://github.com/enmotech/mopheus-skills",
+  "license": "MIT",
+  "keywords": [
+    "mopheus",
+    "mop",
+    "tickets",
+    "agents",
+    "cli",
+    "engineering",
+    "skills"
+  ],
+  "skills": [
+    "./skills/mop",
+    "./skills/using-codegraph"
+  ]
+}
