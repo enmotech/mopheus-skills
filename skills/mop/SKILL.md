@@ -216,10 +216,10 @@ For specialized tasks that exceed basic CLI ergonomics, use the bundled scripts 
   ```bash
   # View clean compact transcript
   python <skill-dir>/scripts/mop_task.py transcript <task-id> [--profile <p>]
-
+  
   # Filter tool calls only (e.g. Bash executions)
   python <skill-dir>/scripts/mop_task.py transcript <task-id> --tools-only
-
+  
   # Grep for specific errors or keywords
   python <skill-dir>/scripts/mop_task.py transcript <task-id> --grep "error"
   ```
